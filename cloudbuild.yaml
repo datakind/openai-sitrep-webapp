@@ -45,6 +45,6 @@ images:
   - 'gcr.io/$PROJECT_ID/executive-summary:$COMMIT_SHA'
   - 'gcr.io/$PROJECT_ID/executive-summary:latest'
 
-# Only log to Cloud Logging
+# Only log to Cloud Logging instead of Cloud Build Logs
 options:
   logging: CLOUD_LOGGING_ONLY
