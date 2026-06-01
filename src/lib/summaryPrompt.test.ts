@@ -16,7 +16,9 @@ describe("buildSummaryInstructions", () => {
     expect(prompt).toContain("## Key figures");
     expect(prompt).toContain("valid multi-line Markdown table");
     expect(prompt).toContain("each data row on separate lines");
-    expect(prompt).toContain("## Visualization");
+    expect(prompt).toContain("inline graph");
+    expect(prompt).toContain("Do not add a separate \"Visualization\" heading.");
+    expect(prompt).not.toContain("## Visualization");
     expect(prompt).toContain("## Outlook and priorities");
     expect(prompt).toContain("## References");
     expect(prompt).toContain("[S1] alpha.pdf");
@@ -32,12 +34,13 @@ describe("buildSummaryInstructions", () => {
     expect(prompt).toContain("not an official UNOCHA publication");
   });
 
-  it("prioritizes recent data and requires a visualization", () => {
+  it("prioritizes recent data and requires an inline graph", () => {
     const prompt = buildSummaryInstructions(["older.pdf", "newer.pdf"]);
 
     expect(prompt).toContain("Prefer the most recent supported data");
     expect(prompt).toContain("Lead with the newest and most operationally significant information");
-    expect(prompt).toContain("Create at least one simple text visualization");
+    expect(prompt).toContain("Create at least one simple graph");
+    expect(prompt).toContain("place the graph inline inside the most relevant existing section");
     expect(prompt).toContain("fenced code block with proportional bars");
   });
 

@@ -16,16 +16,16 @@ export function buildSummaryInstructions(filenames: string[], language: OutputLa
 
 Write the full report in ${language}. Keep proper nouns, organization names, place names, technical acronyms, and figures faithful to the uploaded documents.
 
-Create at least one simple text visualization using only cited figures from the uploaded documents. Prefer the newest comparable figures.
+Create at least one simple graph using only cited figures from the uploaded documents. Prefer the newest comparable figures, and place the graph inline inside the most relevant existing section instead of creating a separate visualization section.
 
-Use the OCHA/UN humanitarian SitRep format as the model: concise title, reporting period, highlights, situation overview, impact/needs, operational response, access or constraints, key figures, one visual, outlook/priorities, data notes, and references.
+Use the OCHA/UN humanitarian SitRep format as the model: concise title, reporting period, highlights, situation overview, impact/needs, operational response, access or constraints, key figures with an inline graph, outlook/priorities, data notes, and references.
 
 Evidence and citation rules:
 - Treat the uploaded documents as the only source of truth.
 - Do not invent locations, dates, figures, sectors, agencies, funding amounts, casualties, displacement numbers, affected populations, response activities, or constraints.
 - Every factual claim and every figure must include an inline citation to the uploaded document label, such as [S1] or [S2].
 - If one sentence combines facts from multiple documents, cite every relevant source label at the end of the sentence.
-- Prefer the most recent supported data when documents conflict or overlap; make newer data more prominent in Highlights, Situation overview, Key figures, and Visualization.
+- Prefer the most recent supported data when documents conflict or overlap; make newer data more prominent in Highlights, Situation overview, Key figures, and the inline graph.
 - When older data provides useful trend or baseline context, include it only after the latest data and cite it clearly.
 - If a section has no support in the uploaded documents, write "Information not available in the uploaded documents."
 - Keep bullets to one sentence unless the evidence requires a short clarifying phrase.
@@ -55,10 +55,7 @@ Use bullets grouped by responding actors, clusters/sectors, government, UN, NGOs
 Use bullets for unmet needs, operational constraints, access issues, funding gaps, data gaps, security constraints, or coordination issues.
 
 ## Key figures
-Create a valid multi-line Markdown table with columns: Indicator, Latest figure, Date or reporting period, Source. Put the header row, separator row, and each data row on separate lines so the table renders properly. Include only figures supported by the uploaded files. If older documents contain comparable figures, add a short cited trend note below the table.
-
-## Visualization
-Create at least one simple text visualization using only cited figures from the uploaded documents. Prefer the newest comparable figures. Use a fenced code block with proportional bars, for example:
+Create a valid multi-line Markdown table with columns: Indicator, Latest figure, Date or reporting period, Source. Put the header row, separator row, and each data row on separate lines so the table renders properly. Include only figures supported by the uploaded files. Immediately below the table, include one inline graph using the most relevant comparable figures from the uploaded documents. Do not add a separate "Visualization" heading. Use a fenced code block with proportional bars, for example:
 
 \`\`\`text
 Affected people by area
@@ -66,7 +63,7 @@ Area A | ██████████ 100,000
 Area B | ████ 40,000
 \`\`\`
 
-Immediately below the visualization, add a cited note explaining the data source and date.
+Immediately below the graph, add a cited note explaining the data source and date. If older documents contain comparable figures, add a short cited trend note below the graph.
 
 ## Outlook and priorities
 Use bullets for likely near-term developments, priority actions, decisions needed, or follow-up information requirements.
