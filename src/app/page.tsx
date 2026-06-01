@@ -2,7 +2,8 @@
 
 import { ChangeEvent, DragEvent, FormEvent, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { FileText, Loader2, Plus, Send, Trash2, UploadCloud } from "lucide-react";
+import remarkGfm from "remark-gfm";
+import { Download, FileText, Loader2, Plus, Send, Trash2, UploadCloud } from "lucide-react";
 import { acceptedFileInputValue, formatBytes, MAX_TOTAL_BYTES, validateFiles } from "@/lib/fileValidation";
 import { OutputLanguage, SUPPORTED_OUTPUT_LANGUAGES } from "@/lib/summaryPrompt";
 
@@ -30,11 +31,19 @@ const COPY: Record<
     loading: string;
     placeholder: string;
     languageLabel: string;
+    downloadPdf: string;
+    downloadingPdf: string;
+    downloadUnavailable: string;
+    downloadFailed: string;
+    reviewTitle: string;
+    reviewBody: string;
+    reviewCancel: string;
+    reviewConfirm: string;
   }
 > = {
   English: {
     eyebrow: "Document synthesis",
-    title: "UNOCHA SitRep",
+    title: "SitRep Summary",
     intro: "Upload all documents to generate your SitRep",
     drop: "Drop files here or browse",
     types: "PDF, Word, PowerPoint, text, Markdown, JSON, CSV, TSV, and Excel.",
@@ -48,7 +57,16 @@ const COPY: Record<
     summary: "Summary",
     loading: "Reading the uploaded files and preparing the brief.",
     placeholder: "Your Situation Report will appear here after the upload is processed.",
-    languageLabel: "Language"
+    languageLabel: "Language",
+    downloadPdf: "Download PDF",
+    downloadingPdf: "Preparing PDF",
+    downloadUnavailable: "Generate a Situation Report before downloading a PDF.",
+    downloadFailed: "Unable to create the PDF. Please try again.",
+    reviewTitle: "Confirm human review",
+    reviewBody:
+      "Before downloading, confirm that a human has reviewed and approved this Situation Report summary.",
+    reviewCancel: "Cancel",
+    reviewConfirm: "Confirm and download"
   },
   "Central Thai": {
     eyebrow: "การสังเคราะห์เอกสาร",
@@ -66,7 +84,16 @@ const COPY: Record<
     summary: "สรุป",
     loading: "กำลังอ่านไฟล์ที่อัปโหลดและจัดทำรายงาน",
     placeholder: "รายงานสถานการณ์ของคุณจะแสดงที่นี่หลังจากประมวลผลการอัปโหลดแล้ว",
-    languageLabel: "ภาษา"
+    languageLabel: "ภาษา",
+    downloadPdf: "ดาวน์โหลด PDF",
+    downloadingPdf: "กำลังเตรียม PDF",
+    downloadUnavailable: "โปรดสร้างรายงานสถานการณ์ก่อนดาวน์โหลด PDF",
+    downloadFailed: "ไม่สามารถสร้าง PDF ได้ โปรดลองอีกครั้ง",
+    reviewTitle: "ยืนยันการตรวจสอบโดยมนุษย์",
+    reviewBody:
+      "ก่อนดาวน์โหลด โปรดยืนยันว่ามีมนุษย์ตรวจสอบและอนุมัติสรุปรายงานสถานการณ์นี้แล้ว",
+    reviewCancel: "ยกเลิก",
+    reviewConfirm: "ยืนยันและดาวน์โหลด"
   }
 };
 
@@ -78,13 +105,20 @@ type SummaryResponse = {
   model: string;
 };
 
+function normalizeMarkdownTables(markdown: string) {
+  return markdown.replace(/\|\s+\|/g, "|\n|");
+}
+
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const reportRef = useRef<HTMLElement>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isReviewConfirmOpen, setIsReviewConfirmOpen] = useState(false);
   const [language, setLanguage] = useState<OutputLanguage>("English");
 
   const validation = useMemo(() => validateFiles(files), [files]);
@@ -166,6 +200,88 @@ export default function Home() {
       ]);
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  function requestDownloadPdf() {
+    if (!summary || !reportRef.current) {
+      setErrors([copy.downloadUnavailable]);
+      return;
+    }
+
+    setErrors([]);
+    setIsReviewConfirmOpen(true);
+  }
+
+  async function handleDownloadPdf() {
+    if (!summary || !reportRef.current) {
+      setErrors([copy.downloadUnavailable]);
+      setIsReviewConfirmOpen(false);
+      return;
+    }
+
+    setIsReviewConfirmOpen(false);
+    setIsDownloading(true);
+    setErrors([]);
+
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf")
+      ]);
+      const canvas = await html2canvas(reportRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true
+      });
+      const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 40;
+      const imageWidth = pageWidth - margin * 2;
+      const pageImageHeight = pageHeight - margin * 2;
+      const sliceHeight = Math.floor((pageImageHeight * canvas.width) / imageWidth);
+      let sourceY = 0;
+
+      while (sourceY < canvas.height) {
+        if (sourceY > 0) {
+          pdf.addPage();
+        }
+
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = Math.min(sliceHeight, canvas.height - sourceY);
+        const context = pageCanvas.getContext("2d");
+
+        if (!context) {
+          throw new Error("Canvas rendering is unavailable.");
+        }
+
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        context.drawImage(
+          canvas,
+          0,
+          sourceY,
+          canvas.width,
+          pageCanvas.height,
+          0,
+          0,
+          canvas.width,
+          pageCanvas.height
+        );
+
+        const imageData = pageCanvas.toDataURL("image/png");
+        const renderedHeight = (pageCanvas.height * imageWidth) / pageCanvas.width;
+        pdf.addImage(imageData, "PNG", margin, margin, imageWidth, renderedHeight);
+        sourceY += sliceHeight;
+      }
+
+      pdf.save(`unocha-sitrep-${new Date().toISOString().slice(0, 10)}.pdf`);
+    } catch {
+      setErrors([copy.downloadFailed]);
+    } finally {
+      setIsDownloading(false);
     }
   }
 
@@ -272,11 +388,26 @@ export default function Home() {
             <p className="eyebrow">{copy.output}</p>
             <h2 id="summary-title">{copy.summary}</h2>
           </div>
-          {summary && (
-            <span className="model-pill">
-              {summary.fileCount} files via {summary.model}
-            </span>
-          )}
+          <div className="summary-actions">
+            {summary && (
+              <span className="model-pill">
+                {summary.fileCount} files via {summary.model}
+              </span>
+            )}
+            <button
+              type="button"
+              className="download-button"
+              onClick={requestDownloadPdf}
+              disabled={!summary || isDownloading}
+            >
+              {isDownloading ? (
+                <Loader2 aria-hidden="true" className="spin" size={17} />
+              ) : (
+                <Download aria-hidden="true" size={17} />
+              )}
+              {isDownloading ? copy.downloadingPdf : copy.downloadPdf}
+            </button>
+          </div>
         </div>
 
         {isSubmitting && (
@@ -287,8 +418,8 @@ export default function Home() {
         )}
 
         {!isSubmitting && summary && (
-          <article className="markdown-body">
-            <ReactMarkdown>{summary.summary}</ReactMarkdown>
+          <article className="markdown-body" ref={reportRef}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalizeMarkdownTables(summary.summary)}</ReactMarkdown>
           </article>
         )}
 
@@ -298,6 +429,34 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {isReviewConfirmOpen && (
+        <div className="modal-backdrop" role="presentation">
+          <div
+            className="confirmation-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="review-confirm-title"
+            aria-describedby="review-confirm-body"
+          >
+            <h2 id="review-confirm-title">{copy.reviewTitle}</h2>
+            <p id="review-confirm-body">{copy.reviewBody}</p>
+            <div className="dialog-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setIsReviewConfirmOpen(false)}
+              >
+                {copy.reviewCancel}
+              </button>
+              <button type="button" className="primary-dialog-button" onClick={handleDownloadPdf}>
+                <Download aria-hidden="true" size={17} />
+                {copy.reviewConfirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
