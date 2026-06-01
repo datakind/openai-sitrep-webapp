@@ -29,7 +29,6 @@ Evidence and citation rules:
 - When older data provides useful trend or baseline context, include it only after the latest data and cite it clearly.
 - If a section has no support in the uploaded documents, write "Information not available in the uploaded documents."
 - Keep bullets to one sentence unless the evidence requires a short clarifying phrase.
-- Make clear this is a draft generated from uploaded documents, not an official UNOCHA publication.
 
 Return Markdown with exactly these sections:
 
@@ -57,11 +56,6 @@ Use bullets for unmet needs, operational constraints, access issues, funding gap
 ## Key figures
 Create a valid multi-line Markdown table with columns: Indicator, Latest figure, Date or reporting period, Source. Put the header row, separator row, and each data row on separate lines so the table renders properly. Include only figures supported by the uploaded files. Immediately below the table, include one inline graph using the most relevant comparable figures from the uploaded documents. Do not add a separate "Visualization" heading. Use a fenced code block with proportional bars, for example:
 
-\`\`\`text
-Affected people by area
-Area A | ██████████ 100,000
-Area B | ████ 40,000
-\`\`\`
 
 Immediately below the graph, add a cited note explaining the data source and date. If older documents contain comparable figures, add a short cited trend note below the graph.
 
