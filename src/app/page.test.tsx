@@ -83,6 +83,24 @@ describe("Home", () => {
     expect(screen.getByText("รายงานสถานการณ์ของคุณจะแสดงที่นี่หลังจากประมวลผลการอัปโหลดแล้ว")).toBeInTheDocument();
   });
 
+  it("opens and closes the help popup", async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+
+    expect(screen.queryByRole("dialog", { name: "How to use this app" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Help" }));
+
+    expect(screen.getByRole("dialog", { name: "How to use this app" })).toBeInTheDocument();
+    expect(screen.getByText("Add all source documents for the same situation.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Help" })).toHaveAttribute("aria-expanded", "true");
+
+    await user.click(screen.getByRole("button", { name: "Close help" }));
+
+    expect(screen.queryByRole("dialog", { name: "How to use this app" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Help" })).toHaveAttribute("aria-expanded", "false");
+  });
+
   it("adds and removes selected files", async () => {
     const user = userEvent.setup();
     const { container } = render(<Home />);

@@ -3,7 +3,7 @@
 import { ChangeEvent, DragEvent, FormEvent, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Download, FileText, Loader2, Plus, Send, Trash2, UploadCloud } from "lucide-react";
+import { Download, FileText, HelpCircle, Loader2, Plus, Send, Trash2, UploadCloud, X } from "lucide-react";
 import { acceptedFileInputValue, formatBytes, MAX_TOTAL_BYTES, validateFiles } from "@/lib/fileValidation";
 import { OutputLanguage, SUPPORTED_OUTPUT_LANGUAGES } from "@/lib/summaryPrompt";
 
@@ -39,6 +39,10 @@ const COPY: Record<
     reviewBody: string;
     reviewCancel: string;
     reviewConfirm: string;
+    helpButton: string;
+    helpTitle: string;
+    helpClose: string;
+    helpSteps: string[];
   }
 > = {
   English: {
@@ -66,7 +70,17 @@ const COPY: Record<
     reviewBody:
       "Before downloading, confirm that a human has reviewed and approved this Situation Report summary.",
     reviewCancel: "Cancel",
-    reviewConfirm: "Confirm and download"
+    reviewConfirm: "Confirm and download",
+    helpButton: "Help",
+    helpTitle: "How to use this app",
+    helpClose: "Close help",
+    helpSteps: [
+      "Choose the report language with the flag picker.",
+      "Add all source documents for the same situation.",
+      "Click Generate SitRep to create one combined draft.",
+      "Review citations, figures, and the graph before sharing.",
+      "Download a PDF only after human approval."
+    ]
   },
   "Central Thai": {
     eyebrow: "การสังเคราะห์เอกสาร",
@@ -93,7 +107,17 @@ const COPY: Record<
     reviewBody:
       "ก่อนดาวน์โหลด โปรดยืนยันว่ามีมนุษย์ตรวจสอบและอนุมัติสรุปรายงานสถานการณ์นี้แล้ว",
     reviewCancel: "ยกเลิก",
-    reviewConfirm: "ยืนยันและดาวน์โหลด"
+    reviewConfirm: "ยืนยันและดาวน์โหลด",
+    helpButton: "ช่วยเหลือ",
+    helpTitle: "วิธีใช้แอปนี้",
+    helpClose: "ปิดคำแนะนำ",
+    helpSteps: [
+      "เลือกภาษาของรายงานด้วยตัวเลือกธง",
+      "เพิ่มเอกสารต้นทางทั้งหมดสำหรับสถานการณ์เดียวกัน",
+      "กดสร้างรายงานสถานการณ์เพื่อสร้างฉบับร่างรวมหนึ่งฉบับ",
+      "ตรวจสอบแหล่งอ้างอิง ตัวเลข และกราฟก่อนแชร์",
+      "ดาวน์โหลด PDF หลังจากมีมนุษย์ตรวจสอบและอนุมัติแล้วเท่านั้น"
+    ]
   }
 };
 
@@ -119,6 +143,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isReviewConfirmOpen, setIsReviewConfirmOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [language, setLanguage] = useState<OutputLanguage>("English");
 
   const validation = useMemo(() => validateFiles(files), [files]);
@@ -457,6 +482,44 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <div className="help-widget">
+        {isHelpOpen && (
+          <section
+            id="help-popover"
+            className="help-popover"
+            role="dialog"
+            aria-labelledby="help-title"
+          >
+            <div className="help-popover-header">
+              <h2 id="help-title">{copy.helpTitle}</h2>
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setIsHelpOpen(false)}
+                aria-label={copy.helpClose}
+              >
+                <X aria-hidden="true" size={17} />
+              </button>
+            </div>
+            <ul>
+              {copy.helpSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <button
+          type="button"
+          className="help-button"
+          onClick={() => setIsHelpOpen((open) => !open)}
+          aria-expanded={isHelpOpen}
+          aria-controls="help-popover"
+        >
+          <HelpCircle aria-hidden="true" size={19} />
+          {copy.helpButton}
+        </button>
+      </div>
     </main>
   );
 }
