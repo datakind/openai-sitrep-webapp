@@ -16,7 +16,7 @@ export function buildSummaryInstructions(filenames: string[], language: OutputLa
 
 Write the full report in ${language}. Keep proper nouns, organization names, place names, technical acronyms, and figures faithful to the uploaded documents.
 
-Create at least one simple graph using only cited figures from the uploaded documents. Prefer the newest comparable figures, and place the graph inline inside the most relevant existing section instead of creating a separate visualization section.
+Create at least one graph visualization using only cited figures from the uploaded documents. Prefer the newest comparable figures, and place the graph inline inside the most relevant existing section instead of creating a separate visualization section.
 
 Use the OCHA/UN humanitarian SitRep format as the model: concise title, reporting period, highlights, situation overview, impact/needs, operational response, access or constraints, key figures with an inline graph, outlook/priorities, data notes, and references.
 
