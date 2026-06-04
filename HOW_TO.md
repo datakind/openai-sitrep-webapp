@@ -1,266 +1,175 @@
 # How To Use The SitRep Summary App
 
-This guide explains how to set up and operate the SitRep Summary App from start to finish.
+The SitRep Summary App helps you turn a set of source documents into one draft Situation Report summary. It is designed for users who need a concise, structured report based on multiple documents.
 
-The app runs locally in your browser. It lets you upload a batch of documents, sends those documents to OpenAI through a server-side API route, and returns one draft UNOCHA-style Situation Report summary.
+The app can summarize PDFs, Word documents, spreadsheets, text files, and other common document formats. The output should always be reviewed by a person before it is shared or used for decision-making.
 
-## 1. Before You Start
+## 1. When To Use This App
 
-You need:
+Use this app when you have several documents about the same emergency, operation, assessment, or response and want one consolidated Situation Report.
 
-- Node.js and npm installed.
-- An OpenAI API key.
-- Source documents you want summarized into one Situation Report.
-- Access to this project folder.
+Good examples include:
 
-The app does not include user accounts, upload history, a database, or cloud storage. Files are handled for the current request only.
+- Situation updates
+- Assessment reports
+- Meeting notes
+- Operational briefs
+- Response plans
+- Datasets or spreadsheets with key figures
+- Public information updates
 
-## 2. Install The App
+The app works best when the uploaded documents are related to the same context, location, or event.
 
-From the project folder, install dependencies:
+## 2. Choose Your Documents
 
-```bash
-npm install
-```
+Before uploading, gather the documents that should inform the report.
 
-You only need to do this once, or again after dependencies change.
+Try to include:
 
-## 3. Configure OpenAI
+- The most recent reports or updates.
+- Documents with dates, locations, and key figures.
+- Files that describe impacts, needs, response activities, gaps, and constraints.
+- Any documents that explain differences between older and newer figures.
 
-Create a local environment file:
+Avoid uploading:
 
-```bash
-cp .env.example .env.local
-```
+- Unrelated files.
+- Duplicate copies of the same document.
+- Drafts that should not be used.
+- Files that contain information you do not want considered in the summary.
 
-Open `.env.local` and set:
+## 3. Supported File Types
 
-```bash
-OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-5.5
-```
-
-Notes:
-
-- `OPENAI_API_KEY` is required.
-- `OPENAI_MODEL` is optional.
-- If `OPENAI_MODEL` is not set, the app defaults to `gpt-5.5`.
-- `.env.local` should stay local and should not be committed to Git.
-
-Restart the server any time you change `.env.local`.
-
-## 4. Start The App
-
-Run the development server:
-
-```bash
-npm run dev
-```
-
-Open:
-
-```text
-http://localhost:3000
-```
-
-If port `3000` is already in use, Next.js may offer another local port. Use the URL shown in the terminal.
-
-## 5. Prepare Your Documents
-
-Use files that contain the information you want reflected in the final Situation Report.
-
-Supported file types:
+You can upload:
 
 - PDF
 - Word
 - PowerPoint
-- Plain text
+- Text
 - Markdown
 - JSON
 - CSV
 - TSV
 - Excel
 
-Upload limits:
+Each file must be under 50 MB, and the full upload batch must also stay under 50 MB.
 
-- Each file must be under 50 MB.
-- The total selected upload batch must be under 50 MB.
+## 4. Select The Report Language
 
-Tips for better results:
+Use the flag picker in the upper-right corner of the page to choose the output language.
 
-- Upload the newest reports or assessments when available.
-- Include source files that contain dates, locations, figures, and operational updates.
-- Avoid duplicate files unless they contain meaningful differences.
-- Remove unrelated files before generating the report.
-- If documents conflict, the prompt asks the model to prioritize newer data and flag discrepancies.
-
-## 6. Choose The Output Language
-
-Use the flag picker in the upper-right corner.
-
-Available options:
+Available languages:
 
 - English
 - Central Thai
 
-Changing the language clears any existing generated summary. Generate the SitRep again after changing languages.
+If you change the language after generating a report, generate the report again so the output matches your selected language.
 
-## 7. Upload Files
+## 5. Upload Files
 
-You can add files in either of two ways:
+You can upload files in two ways:
 
 - Drag files into the upload area.
-- Click **Add files** and select files from your computer.
+- Click **Add files** and choose files from your computer.
 
-After adding files, the app shows:
+After files are added, the app shows:
 
-- Number of selected files.
-- Combined upload size.
-- A list of selected filenames.
-- File sizes.
-- A remove button for each file.
+- How many files are selected.
+- The total upload size.
+- The name of each selected file.
+- The size of each selected file.
 
-If you select an unsupported or oversized file, the app displays a validation error before submitting.
+To remove a file, use the remove button next to that file before generating the report.
 
-## 8. Generate The SitRep
+## 6. Generate The Situation Report
 
-Click **Generate SitRep**.
+When your file list is ready, click **Generate SitRep**.
 
-The app will:
+The app will read the uploaded documents and create one combined draft Situation Report. This may take a little time depending on the number and size of files.
 
-1. Validate the file selection.
-2. Send the files to the local server route.
-3. Send the files from the server to OpenAI.
-4. Ask OpenAI to synthesize one Situation Report across the full upload batch.
-5. Display the generated Markdown report in the output panel.
+While the report is being generated, the page shows a loading state. When the report is ready, it appears in the output panel on the right side of the page.
 
-During generation, the button and output panel show a loading state.
+## 7. What The Report Includes
 
-## 9. Understand The Generated Output
+The generated report is designed to follow a Situation Report style. It may include:
 
-The generated Situation Report is prompted to include:
-
-- Situation Report title
+- Title
 - Reporting period
 - Highlights
 - Situation overview
 - Humanitarian impact and needs
 - Response
 - Gaps and constraints
-- Key figures with an inline graph
+- Key figures
+- An inline graph based on uploaded data
 - Outlook and priorities
 - Discrepancies or confidence notes
 - References
 
-The model is instructed to:
+The report should cite facts and figures using source labels such as `[S1]` and `[S2]`. The references section links those labels to the uploaded filenames.
 
-- Use only the uploaded documents as sources.
-- Cite factual claims and figures with source labels such as `[S1]` and `[S2]`.
-- Prefer newer data when documents overlap.
-- Include a references list by uploaded filename.
-- Note conflicts, stale data, weak evidence, or source limitations.
-- Make clear the output is a draft and not an official UNOCHA publication.
+## 8. Review The Report
 
-## 10. Review The Report
-
-Always review the generated report before using or sharing it.
+Always review the report before using it.
 
 Check that:
 
-- The crisis/event and location are correct.
+- The event, crisis, or location is correct.
 - The reporting period is accurate.
-- Figures match the source documents.
-- Citations appear on factual claims and figures.
-- The inline graph uses cited data.
-- Older data is not presented as newer data.
-- Discrepancies or uncertainty are called out clearly.
-- The references section includes the uploaded documents used.
+- Key figures match the uploaded documents.
+- Important claims include source citations.
+- The graph is based on cited figures.
+- Newer information is prioritized where documents overlap.
+- Any conflicting or uncertain information is clearly noted.
+- The references section includes the documents used.
 
-If something looks wrong, revise the uploaded document set and generate the SitRep again.
+If the report is missing important information, try adding more relevant source documents and generating it again.
 
-## 11. Download A PDF
+If the report includes incorrect or unsupported information, remove unclear or unrelated files and regenerate the report.
 
-After a summary is generated, the **Download PDF** button becomes available.
+## 9. Download The Report As A PDF
 
-To export:
+After a report has been generated, the **Download PDF** button becomes available.
+
+To download:
 
 1. Click **Download PDF**.
-2. Read the confirmation popup.
-3. Confirm that a human has reviewed and approved the summary.
-4. The browser downloads the report as a PDF.
+2. Confirm that a human has reviewed and approved the summary.
+3. The report downloads as a PDF.
 
-The confirmation step exists because generated reports should be reviewed before distribution.
+The confirmation step is intentional. Generated summaries should be reviewed before they are distributed.
 
-## 12. Common Errors
+## 10. Common Messages And What To Do
 
 ### No Files Selected
 
-Add at least one supported file before generating a SitRep.
+Add at least one file before clicking **Generate SitRep**.
 
 ### Unsupported File Type
 
-The file extension is not accepted by the app. Convert the document to a supported format or remove it.
+Remove the unsupported file or convert it to a supported format.
 
-### File Too Large
+### Upload Too Large
 
-Remove or reduce files until each file is under 50 MB and the total batch is under 50 MB.
+Remove files until the selected batch is under the size limit.
 
 ### Missing API Key
 
-Set `OPENAI_API_KEY` in `.env.local`, then restart the server.
+Ask the person responsible for running the app to check the app configuration.
 
 ### OpenAI API Error
 
-Possible causes:
+Try again. If the error continues, ask the person responsible for running the app to check the app configuration, model access, or connection.
 
-- Invalid API key.
-- Model unavailable to the account.
-- Network issue.
-- Unsupported file content.
-- Request too large.
+### PDF Button Is Disabled
 
-Check the browser error message and terminal logs for details.
+Generate a report first. The PDF button is only available after a successful report is shown.
 
-### PDF Button Disabled
+## 11. Good Practices
 
-Generate a SitRep first. PDF export is disabled until the app has a successful summary.
-
-## 13. Developer Commands
-
-Run tests:
-
-```bash
-npm test
-```
-
-Run tests in watch mode:
-
-```bash
-npm run test:watch
-```
-
-Run linting:
-
-```bash
-npm run lint
-```
-
-Build for production:
-
-```bash
-npm run build
-```
-
-Start the production server:
-
-```bash
-npm start
-```
-
-## 14. Operational Notes
-
-- The app is designed for local use.
-- Uploaded files are not saved as app history.
-- The OpenAI API key is used server-side only.
-- The output is a draft synthesis, not an official humanitarian product.
-- Human review is required before using the generated report operationally.
+- Use the newest documents available.
+- Keep each upload batch focused on one situation or emergency.
+- Review citations carefully.
+- Treat the generated output as a draft.
+- Do not share the PDF until a person has reviewed and approved it.
+- Regenerate the report if you add, remove, or change source documents.
